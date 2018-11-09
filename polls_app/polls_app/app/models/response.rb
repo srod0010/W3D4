@@ -18,6 +18,23 @@ class Response < ApplicationRecord
   belongs_to :answer_choice,
     primary_key: :id,
     foreign_key: :answer_id,
-    class_name: :Answer
+    class_name: :AnswerChoice
 
+  has_one :question,
+    through: :answer_choice,
+    source: :question
+
+  def sibling_responses
+    self.question.responses.where.not(id: self.id)
+  end
+
+  def respondent_already_answered?
+    sibling_responses.length > 0
+  end
+
+  def not_duplicate_response
+    if respondent_already_answered?
+      errors[:base] << "You can\'t respond twice"
+    end
+  end
 end
